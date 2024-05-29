@@ -19,7 +19,7 @@ Run the file `main.jl`, eg, `julia --project -t auto main.jl`.
 
 Open the browser and navigate to `http://localhost:8000`.
 
-Open some serialized LLM conversations and start browsing.
+As an example, load the file `log/conversation...` in this folder.
 
 ## Frequently Asked Questions
 
@@ -47,3 +47,7 @@ pprint(conversation)
 ```
 
 You should see a few files created in the folder `log/` - try opening them with Spehulak!
+
+**What's Spehulak?**
+
+"Špehulak" (pronounced "shpeh-hoo-lahk") blends "spy" and "snowman," riffing on the Czech words "špeh" for spy and "sněhulák" for snowman. It’s a fun name for an observability platform because it’s all about keeping a watchful eye, like a spy, while the snowman part plays into being cool under pressure as you sift through heaps of data plus being invisible/in the background, not being in the way. It’s perfect for diving deep into the inner workings of your LLM apps!
