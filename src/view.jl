@@ -38,7 +38,15 @@ function ui()
                     [
                     btn(; dense = true, flat = true, round = true, icon = "menu",
                         @click("left_drawer_open = !left_drawer_open")),
-                    toolbartitle("Spehulak")
+                    toolbartitle("Spehulak"),
+                    space(),
+                    htmldiv(class = "ml-6 flex items-center justify-end",
+                        btngroup(class = "py-auto items-center",
+                            [btn(@click(:files_prev), icon = "arrow_back", size = "md"),
+                                btn(@click(:files_next),
+                                    icon = "arrow_forward", size = "md"),
+                                btn(@click(:files_random), icon = "casino", size = "md")])
+                    )
                 ])]),
             drawer(bordered = "", fieldname = "left_drawer_open", side = "left",
                 var":mini" = "ministate", var"@mouseover" = "ministate = false",

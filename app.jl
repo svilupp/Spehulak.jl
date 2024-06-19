@@ -69,7 +69,7 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
     end
     ### Files
     @onchange fileuploads begin
-        if !isempty(fileuploads)
+        if !isempty(fileuploads) && haskey(fileuploads, "path")
             path = fileuploads["path"]
             @info "> File was uploaded: $(path)"
             ## SKIP RAG objects for now
@@ -80,19 +80,23 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
     end
     @onbutton files_submit begin
         @info "> Path provided: $(files_path)"
-        conversations = load_conversations_from_dir(dirname(files_path))
+        dir_path = isdir(files_path) ? files_path : dirname(files_path)
+        conversations = load_conversations_from_dir(dir_path)
         @info "> Loaded $(length(conversations)) conversations from disk"
-        files_loaded = [msg2snow(conversations[1]; path = conversations[1].path)]
+        files_loaded = [msg2snow(c[:messages]; path = c[:path]) for c in conversations]
         files_show = copy(files_loaded)
+        ## Scroll to the bottom of the conversation (if there were multiple overview messages generated)
+        Base.run(__model__, raw"window.scrollTo(0, document.body.scrollHeight);")
     end
     @onbutton files_reset begin
         @info "> Resetting files"
-        files_displayed = empty!(files_displayed)
+        files_show = empty!(files_show)
+        files_loaded = empty!(files_loaded)
         Base.run(__model__, raw"this.$refs.uploader.reset()")
     end
     ### Navigation
-    @onchange files_filter_submit begin
-        @info "> Filtering files"
+    @onbutton files_filter_submit begin
+        @info "> Filtering files with \"$(files_filter)\""
         if isempty(files_filter)
             files_show = copy(files_loaded)
         else
@@ -106,11 +110,11 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
     end
     @onbutton files_prev begin
         @info "> Previous file"
-        Base.run(__model__, raw"this.scrollToElement('convo_0')")
+        Base.run(__model__, raw"this.scrollToElementPrevious()")
     end
     @onbutton files_next begin
         @info "> Next file"
-        Base.run(__model__, raw"this.scrollToElement('convo_1')")
+        Base.run(__model__, raw"this.scrollToElementNext()")
     end
     @onbutton files_random begin
         @info "> Random file"
@@ -145,6 +149,10 @@ end
     },
     scrollToElement (id) {
         const el = document.getElementById(id)
+        if (!el) {
+          console.error(`Element with ID ${id} not found`);
+          return;
+        }
         const target = Quasar.scroll.getScrollTarget(el)
         const offset = el.offsetTop
         const duration = 1000
@@ -166,6 +174,30 @@ end
             console.log(`Element with ID ${element.id} is in view`);
           }
         });
+      },
+      scrollToElementPrevious() {
+        const convoElements = document.querySelectorAll('[id*="convo_"]');
+        let currentIndex = -1;
+        convoElements.forEach((element, index) => {
+          if (this.isInView(element)) {
+            currentIndex = index;
+          }
+        });
+        if (currentIndex > 0) {
+          this.scrollToElement(convoElements[currentIndex - 1].id);
+        }
+      },
+      scrollToElementNext() {
+        const convoElements = document.querySelectorAll('[id*="convo_"]');
+        let currentIndex = -1;
+        convoElements.forEach((element, index) => {
+          if (this.isInView(element)) {
+            currentIndex = index;
+          }
+        });
+        if (currentIndex >= 0 && currentIndex < convoElements.length - 1) {
+          this.scrollToElement(convoElements[currentIndex + 1].id);
+        }
       },
     filterFn (val, update) {
         if (val === '') {
