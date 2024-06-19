@@ -42,7 +42,7 @@ function tab_files_upload()
         row(class = "gutter-col-sm",
             [
                 cell(
-                    textfield(:files_filter, label = "With this occuring...",
+                    textfield("With the following occurring...", :files_filter,
                         hint = "Enter a keyword you're looking for - follows occursin logic"),
                     @on("keyup.enter", "files_filter_submit = true")),
                 cell(class = "flex items-center",
