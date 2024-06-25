@@ -147,7 +147,7 @@ function msg2snow(rag::RT.RAGResult; path::AbstractString = "")
         emb_score = isnothing(emb_idx) ? 0.0 : rag.emb_candidates.scores[emb_idx]
         ##
         rerank_score = rag.reranked_candidates.scores[i]
-        txt = "Source $i: $(rag.sources[i])\nEmbed. score: $(round(emb_score;digits=2)), Rerank. score: $(round(rerank_score;digits=2))\n-----\nContext:\n-----\n$(rag.context[i])\n\n"
+        txt = "Context ID $i\nSource: $(rag.sources[i])\nEmbed. score: $(round(emb_score;digits=2)), Rerank. score: $(round(rerank_score;digits=2))\n-----\nContext:\n-----\n$(rag.context[i])\n\n"
         push!(context, txt)
     end
     emb_stats = isempty(rag.emb_candidates) ? Dict{Symbol, Any}() :

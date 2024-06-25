@@ -84,8 +84,9 @@ function tab_rag_viewer()
             headerstyle = "bg-blue-1", [
                 card([
                 cardsection("Sources used:", class = "text-lg text-weight-bold "),
-                cardsection(ul(class = "list-disc", @for("source in rag_show.sources"),
-                    li("{{source}}")))]
+                cardsection(ul(class = "list-disc ml-5",
+                    li("{{source}}", class = "py-2", style = "white-space: pre-wrap;",
+                        @for("source in rag_show.sources"))))]
             )
             ]),
         expansionitem(
@@ -96,8 +97,9 @@ function tab_rag_viewer()
             headerstyle = "bg-blue-1", [
                 card([
                 cardsection("Context used:", class = "text-lg text-weight-bold "),
-                cardsection(ul(class = "list-disc", @for("ctx in rag_show.context"),
-                    li("{{ctx}}")))]
+                cardsection(ul(class = "list-disc ml-5",
+                    li("{{ctx}}", class = "py-2", style = "white-space: pre-wrap;",
+                        @for("ctx in rag_show.context"))))]
             )
             ]),
         expansionitem(
