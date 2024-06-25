@@ -10,7 +10,7 @@ end
 
 function tab_rag()
     [h3("RAG Viewer"),
-        span("Under construction...")
+        tab_rag_viewer()
     ] |> htmldiv
 end
 

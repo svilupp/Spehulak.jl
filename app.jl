@@ -5,6 +5,8 @@ using PromptingTools
 const PT = PromptingTools
 using PromptingTools.Experimental.AgentTools
 const AT = PromptingTools.Experimental.AgentTools
+using PromptingTools.Experimental.RAGTools
+const RT = PromptingTools.Experimental.RAGTools
 using Base64
 using GenieFramework
 using StippleDownloads, DataFrames, CSV
@@ -39,6 +41,10 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
     ## Conversation show
     @out files_loaded = Vector{SnowConversation}()
     @out files_show = Vector{SnowConversation}()
+    ## RAG files to show
+    @out rag_loaded = SnowRAG[]
+    @in rag_show_idx = 0
+    @out rag_show = SnowRAG()
     # Ratings
     @private df_ratings = DataFrame()
     @out ratings_data = DataTable()
@@ -73,18 +79,33 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
             path = fileuploads["path"]
             @info "> File was uploaded: $(path)"
             ## SKIP RAG objects for now
-            conv = PT.load_conversation(path)
-            files_loaded = push!(files_loaded, msg2snow(conv; path = fileuploads["name"]))
-            files_show = copy(files_loaded)
+            obj = load_object(path)
+            if !isnothing(obj) && haskey(obj, :messages)
+                files_loaded = push!(
+                    files_loaded, msg2snow(obj[:messages]; path = fileuploads["name"]))
+                files_show = copy(files_loaded)
+            elseif !isnothing(obj) && haskey(obj, :rag)
+                rag_loaded = push!(
+                    rag_loaded, msg2snow(obj[:rag]; path = fileuploads["name"]))
+                rag_show_idx = length(rag_loaded)
+                !iszero(rag_show_idx) && (rag_show = rag_loaded[rag_show_idx])
+            else
+                @info "> No file loaded."
+            end
         end
     end
     @onbutton files_submit begin
         @info "> Path provided: $(files_path)"
         dir_path = isdir(files_path) ? files_path : dirname(files_path)
-        conversations = load_conversations_from_dir(dir_path)
-        @info "> Loaded $(length(conversations)) conversations from disk"
-        files_loaded = [msg2snow(c[:messages]; path = c[:path]) for c in conversations]
+        new_convo, new_rags = load_objects_from_dir(dir_path)
+        @info "> Loaded $(length(new_convo)) conversations and $(length(new_rags)) RAGs from disk"
+        ## Load conversations
+        files_loaded = [msg2snow(c[:messages]; path = c[:path]) for c in new_convo]
         files_show = copy(files_loaded)
+        ## Load RAGs
+        rag_loaded = [msg2snow(r[:rag]; path = r[:path]) for r in new_rags]
+        rag_show_idx = length(rag_loaded)
+        !iszero(rag_show_idx) && (rag_show = rag_loaded[rag_show_idx])
         ## Scroll to the bottom of the conversation (if there were multiple overview messages generated)
         Base.run(__model__, raw"window.scrollTo(0, document.body.scrollHeight);")
     end

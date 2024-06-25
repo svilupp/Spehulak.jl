@@ -77,7 +77,8 @@ function tab_files_convos()
                 htmldiv(class = "mt-5", @for("(item, item_index) in convo.messages"),
                     key! = R"item.id", [
                         messagecard("{{item.content}}",
-                            title = "{{item.title}}"),
+                            title = "{{item.title}}";
+                            card_props = Dict(:class => "{{item.class}}")),
                         row(class = "absolute bottom--4 right-8 text-right",
                             [space(),
                                 span("{{item.footer}}",
