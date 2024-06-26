@@ -15,16 +15,13 @@ using StippleDownloads, DataFrames, CSV
 Stipple.Layout.add_script("https://cdn.tailwindcss.com")
 
 #! CONFIGURATION
-## const HISTORY_DIR = joinpath(@__DIR__, "chat_history")
-# Change if you don't want to auto-save conversations (after clicking "New chat")
-## const HISTORY_SAVE = true
 
 @appname SpehulakApp
 
 @app begin
     # layout and page management
     @in left_drawer_open = true
-    @in selected_page = "files"
+    @in selected_page = "conversations"
     @in ministate = true
     # configuration
     # Multi-file view
@@ -35,9 +32,9 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
     @in files_submit = false
     @in files_reset = false
     ## Navigation
-    @in files_prev = false
-    @in files_next = false
-    @in files_random = false
+    @in nav_prev = false
+    @in nav_next = false
+    @in nav_random = false
     ## Conversation show
     @out files_loaded = Vector{SnowConversation}()
     @out files_show = Vector{SnowConversation}()
@@ -107,12 +104,17 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
         rag_show_idx = length(rag_loaded)
         !iszero(rag_show_idx) && (rag_show = rag_loaded[rag_show_idx])
         ## Scroll to the bottom of the conversation (if there were multiple overview messages generated)
+        Base.notify(__model__,
+            "Loaded $(length(new_convo)) conversations (page \"Conversation Browser\") and $(length(new_rags)) RAGs (page \"RAG Browser\").")
         Base.run(__model__, raw"window.scrollTo(0, document.body.scrollHeight);")
     end
     @onbutton files_reset begin
         @info "> Resetting files"
         files_show = empty!(files_show)
         files_loaded = empty!(files_loaded)
+        rag_show = SnowRAG()
+        rag_show_idx = 0
+        rag_loaded = empty!(rag_loaded)
         Base.run(__model__, raw"this.$refs.uploader.reset()")
     end
     ### Navigation
@@ -129,18 +131,39 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
             end
         end
     end
-    @onbutton files_prev begin
-        @info "> Previous file"
-        Base.run(__model__, raw"this.scrollToElementPrevious()")
+    @onbutton nav_prev begin
+        @info "> Nav to previous item"
+        if selected_page == "conversations"
+            isempty(files_loaded) && return
+            Base.run(__model__, raw"this.scrollToElementPrevious()")
+        elseif selected_page == "rag"
+            isempty(rag_loaded) && return
+            rag_show_idx = max(rag_show_idx - 1, firstindex(rag_loaded))
+            rag_show = rag_loaded[rag_show_idx]
+        end
     end
-    @onbutton files_next begin
-        @info "> Next file"
-        Base.run(__model__, raw"this.scrollToElementNext()")
+    @onbutton nav_next begin
+        @info "> Nav to next item"
+        if selected_page == "conversations"
+            isempty(files_loaded) && return
+            Base.run(__model__, raw"this.scrollToElementNext()")
+        elseif selected_page == "rag"
+            isempty(rag_loaded) && return
+            rag_show_idx = min(rag_show_idx + 1, lastindex(rag_loaded))
+            rag_show = rag_loaded[rag_show_idx]
+        end
     end
-    @onbutton files_random begin
-        @info "> Random file"
-        idx = rand(0:(length(files_show) - 1))
-        Base.run(__model__, "this.scrollToElement('convo_$(idx)')")
+    @onbutton nav_random begin
+        @info "> Nav to random item"
+        if selected_page == "conversations"
+            isempty(files_loaded) && return
+            idx = rand(0:(length(files_show) - 1))
+            Base.run(__model__, "this.scrollToElement('convo_$(idx)')")
+        elseif selected_page == "rag"
+            isempty(rag_loaded) && return
+            rag_show_idx = rand(1:(length(rag_loaded)))
+            rag_show = rag_loaded[rag_show_idx]
+        end
     end
 end
 # Required for the uploader component
@@ -262,20 +285,6 @@ end
         el.select();                                    // Select the <textarea> content
         document.execCommand('copy');                   // Copy - only works as a result of a user action (e.g. click events)
         document.body.removeChild(el);                  // Remove the <textarea> element
-    },
-    handleFileInput(file) {
-      // Access the uploaded file data
-      console.log(file); // File object
-      const fileData = file.target.files[0];
-      console.log(fileData.name); // File name
-      console.log(fileData.size); // File size
-      console.log(fileData.type); // File type
-    },
-    handleFolderSelect(event) {
-        console.log(this.singlef_path);
-        console.log(event);
-      const folderPath = event.target.files[0].path;
-      console.log(folderPath); // Selected folder path
     }
     """
 end

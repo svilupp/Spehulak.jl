@@ -21,17 +21,20 @@ export Genie, Server, up, down
 export load_objects_from_dir, load_object
 include("utils.jl")
 
-export messagecard, templatecard
+export messagecard
 include("components.jl")
 
 include("view_files.jl")
 include("view_rag.jl")
 
-export ui, ui_login
+export ui
 include("view.jl")
 
 export SnowRAG, SnowConversation, SnowMessage, msg2snow
 include("conversation.jl")
+
+export launch
+include("server.jl")
 
 function __init__()
 end

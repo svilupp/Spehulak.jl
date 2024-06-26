@@ -13,6 +13,19 @@ Type designed for displaying the conversation in Stipple.
     typeof::Symbol = :SystemMessage
 end
 
+"""
+    SnowConversation
+
+Container for conversations (vector of `SnowMessage`) with some extra fields for metadata.
+
+# Fields
+- `id`: Unique identifier for the conversation
+- `title`: Title of the conversation, eg, the path of the file
+- `class`: CSS class for the conversation
+- `meta`: Metadata for the conversation
+- `messages`: Vector of `SnowMessage`
+
+"""
 @kwdef mutable struct SnowConversation
     id::Int = rand(UInt16) |> Int
     title::AbstractString = ""
@@ -62,13 +75,18 @@ role4snow(::PT.UserMessage) = "User Message"
 role4snow(::PT.AIMessage) = "AI Message"
 role4snow(msg::PT.TracerMessage) = role4snow(msg.object)
 
+"""
+    msg2snow(msg::PT.AbstractMessage; kwargs...)
+
+Transforms a PromptingTools message into a `SnowMessage` that Spehulak understands.
+"""
 function msg2snow(msg::PT.AbstractMessage; kwargs...)
     tokens_str = if PT.isaimessage(msg)
         "Tokens: $(sum(msg.tokens)), "
     else
         ""
     end
-    cost_str = if PT.isaimessage(msg) && msg.cost > 0
+    cost_str = if PT.isaimessage(msg) && !isnothing(msg.cost) && msg.cost > 0
         "Cost: \$$(round(msg.cost;digits=2))"
     else
         ""
@@ -80,6 +98,11 @@ function msg2snow(msg::PT.AbstractMessage; kwargs...)
         class = PT.isaimessage(msg) ? "bg-grey-3" : "",
         typeof = nameof(typeof(msg)), footer)
 end
+"""
+    msg2snow(msg::PT.AbstractTracerMessage; kwargs...)
+
+Transforms a Tracer message into a `SnowMessage` that Spehulak understands.
+"""
 function msg2snow(msg::PT.AbstractTracerMessage; kwargs...)
     model_str = if !isnothing(msg.model)
         "Model: $(msg.model), "
@@ -109,19 +132,33 @@ function msg2snow(msg::PT.AbstractTracerMessage; kwargs...)
         class = PT.isaimessage(msg) ? "bg-grey-3" : "",
         typeof = nameof(typeof(msg)), footer)
 end
+
+"""
+    msg2snow(vect::AbstractVector{<:PT.AbstractMessage}; path::AbstractString = "")
+
+Transforms a vector of messages into a `SnowConversation` that Spehulak understands.
+"""
 function msg2snow(vect::AbstractVector{<:PT.AbstractMessage}; path::AbstractString = "")
     messages = map(msg2snow, vect)
     ## grab the metadata from the first msg that has it
     meta = if length(messages) > 0 && any(PT.istracermessage, vect)
         msg = filter(PT.istracermessage, vect)[1]
-        Dict{Symbol, Any}(msg.meta..., :model => msg.model)
+        meta_info = isnothing(msg.meta) ? Dict{Symbol, Any}() :
+                    Dict{Symbol, Any}(msg.meta...)
+        Dict{Symbol, Any}(meta_info..., :model => msg.model)
     else
         Dict{Symbol, Any}()
     end
     SnowConversation(; messages, title = path, meta)
 end
 
+"""
+    msg2snow(rag::RT.RAGResult; path::AbstractString = "")
+
+Transforms a `RAGResult` into a `SnowRAG` that Spehulak understands.
+"""
 function msg2snow(rag::RT.RAGResult; path::AbstractString = "")
+    # TODO: Fix metadata loading if wrapped object
     ## grab the metadata from the first msg that has it
     # meta = if length(messages) > 0 && any(PT.istracermessage, vect)
     #     msg = filter(PT.istracermessage, vect)[1]
@@ -130,16 +167,29 @@ function msg2snow(rag::RT.RAGResult; path::AbstractString = "")
     #     Dict{Symbol, Any}()
     # end
     ## Core conversation
+    last_msg = PT.last_message(rag) |>
+               x -> !isnothing(x) ? x : PT.AIMessage(; content = rag.final_answer)
     conv_main = msg2snow([
         PT.UserMessage(;
             content = "Question:\n- " * join(rag.rephrased_questions, "\n- ")),
-        PT.last_message(rag)
+        last_msg
     ])
     if rag.reranked_candidates isa RT.MultiCandidateChunks
         @warn "MultiCandidateChunks detected. Scores reported might be incorrect - please open an Issue."
     end
     context = String[]
     for i in eachindex(rag.context)
+        source_str = if i > length(rag.sources)
+            "Source: $(rag.sources[i])\n"
+        else
+            ""
+        end
+        ## skip this step if it's manually added appendded sources
+        if i > length(rag.reranked_candidates.positions)
+            txt = "Context ID $i\n$(source_str)-----\nContext:\n-----\n$(rag.context[i])\n\n"
+            push!(context, txt)
+            continue
+        end
         ## Simplification for CandidateChunks, it might be incorrect for MulticandidateChunks 
         # - we would need to matcht the index_id as well
         ctx_idx = rag.reranked_candidates.positions[i]
@@ -147,7 +197,7 @@ function msg2snow(rag::RT.RAGResult; path::AbstractString = "")
         emb_score = isnothing(emb_idx) ? 0.0 : rag.emb_candidates.scores[emb_idx]
         ##
         rerank_score = rag.reranked_candidates.scores[i]
-        txt = "Context ID $i\nSource: $(rag.sources[i])\nEmbed. score: $(round(emb_score;digits=2)), Rerank. score: $(round(rerank_score;digits=2))\n-----\nContext:\n-----\n$(rag.context[i])\n\n"
+        txt = "Context ID $i\n$(source_str)Embed. score: $(round(emb_score;digits=2)), Rerank. score: $(round(rerank_score;digits=2))\n-----\nContext:\n-----\n$(rag.context[i])\n\n"
         push!(context, txt)
     end
     emb_stats = isempty(rag.emb_candidates) ? Dict{Symbol, Any}() :

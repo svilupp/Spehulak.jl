@@ -4,6 +4,11 @@ function check_if_rag(file::String)
            occursin("reranked_candidates", txt)
 end
 
+"""
+    load_object(path::String)
+
+Loads a conversation or RAGResult from a JSON file. Loads in try-catch loop for safety.
+"""
 function load_object(path::String)
     file = basename(path)
     file_clean = split(file, ".json")[begin] |>
@@ -32,7 +37,11 @@ function load_object(path::String)
     end
 end
 
-"Loads all conversations and RAGResults from a directory (or its sub-directories)"
+"""
+    load_objects_from_dir(dir::String)
+
+Loads all conversations and RAGResults from a directory and its sub-directories
+"""
 function load_objects_from_dir(dir::String)
     new_convo = Dict{Symbol, Any}[]
     new_rags = Dict{Symbol, Any}[]
