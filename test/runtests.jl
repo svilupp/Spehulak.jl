@@ -1,4 +1,8 @@
 using Spehulak
+using PromptingTools
+using PromptingTools.Experimental.RAGTools
+const PT = PromptingTools
+const RT = PromptingTools.Experimental.RAGTools
 using Test
 using Aqua
 
@@ -6,5 +10,7 @@ using Aqua
     @testset "Code quality (Aqua.jl)" begin
         Aqua.test_all(Spehulak; ambiguities = false)
     end
-    # Write your tests here.
+    @testset "RAGTools.jl" begin
+        include("conversation.jl")
+    end
 end

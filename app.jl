@@ -5,6 +5,8 @@ using PromptingTools
 const PT = PromptingTools
 using PromptingTools.Experimental.AgentTools
 const AT = PromptingTools.Experimental.AgentTools
+using PromptingTools.Experimental.RAGTools
+const RT = PromptingTools.Experimental.RAGTools
 using Base64
 using GenieFramework
 using StippleDownloads, DataFrames, CSV
@@ -13,16 +15,13 @@ using StippleDownloads, DataFrames, CSV
 Stipple.Layout.add_script("https://cdn.tailwindcss.com")
 
 #! CONFIGURATION
-## const HISTORY_DIR = joinpath(@__DIR__, "chat_history")
-# Change if you don't want to auto-save conversations (after clicking "New chat")
-## const HISTORY_SAVE = true
 
 @appname SpehulakApp
 
 @app begin
     # layout and page management
     @in left_drawer_open = true
-    @in selected_page = "files"
+    @in selected_page = "conversations"
     @in ministate = true
     # configuration
     # Multi-file view
@@ -33,12 +32,16 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
     @in files_submit = false
     @in files_reset = false
     ## Navigation
-    @in files_prev = false
-    @in files_next = false
-    @in files_random = false
+    @in nav_prev = false
+    @in nav_next = false
+    @in nav_random = false
     ## Conversation show
     @out files_loaded = Vector{SnowConversation}()
     @out files_show = Vector{SnowConversation}()
+    ## RAG files to show
+    @out rag_loaded = SnowRAG[]
+    @in rag_show_idx = 0
+    @out rag_show = SnowRAG()
     # Ratings
     @private df_ratings = DataFrame()
     @out ratings_data = DataTable()
@@ -73,25 +76,45 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
             path = fileuploads["path"]
             @info "> File was uploaded: $(path)"
             ## SKIP RAG objects for now
-            conv = PT.load_conversation(path)
-            files_loaded = push!(files_loaded, msg2snow(conv; path = fileuploads["name"]))
-            files_show = copy(files_loaded)
+            obj = load_object(path)
+            if !isnothing(obj) && haskey(obj, :messages)
+                files_loaded = push!(
+                    files_loaded, msg2snow(obj[:messages]; path = fileuploads["name"]))
+                files_show = copy(files_loaded)
+            elseif !isnothing(obj) && haskey(obj, :rag)
+                rag_loaded = push!(
+                    rag_loaded, msg2snow(obj[:rag]; path = fileuploads["name"]))
+                rag_show_idx = length(rag_loaded)
+                !iszero(rag_show_idx) && (rag_show = rag_loaded[rag_show_idx])
+            else
+                @info "> No file loaded."
+            end
         end
     end
     @onbutton files_submit begin
         @info "> Path provided: $(files_path)"
         dir_path = isdir(files_path) ? files_path : dirname(files_path)
-        conversations = load_conversations_from_dir(dir_path)
-        @info "> Loaded $(length(conversations)) conversations from disk"
-        files_loaded = [msg2snow(c[:messages]; path = c[:path]) for c in conversations]
+        new_convo, new_rags = load_objects_from_dir(dir_path)
+        @info "> Loaded $(length(new_convo)) conversations and $(length(new_rags)) RAGs from disk"
+        ## Load conversations
+        files_loaded = [msg2snow(c[:messages]; path = c[:path]) for c in new_convo]
         files_show = copy(files_loaded)
+        ## Load RAGs
+        rag_loaded = [msg2snow(r[:rag]; path = r[:path]) for r in new_rags]
+        rag_show_idx = length(rag_loaded)
+        !iszero(rag_show_idx) && (rag_show = rag_loaded[rag_show_idx])
         ## Scroll to the bottom of the conversation (if there were multiple overview messages generated)
+        Base.notify(__model__,
+            "Loaded $(length(new_convo)) conversations (page \"Conversation Browser\") and $(length(new_rags)) RAGs (page \"RAG Browser\").")
         Base.run(__model__, raw"window.scrollTo(0, document.body.scrollHeight);")
     end
     @onbutton files_reset begin
         @info "> Resetting files"
         files_show = empty!(files_show)
         files_loaded = empty!(files_loaded)
+        rag_show = SnowRAG()
+        rag_show_idx = 0
+        rag_loaded = empty!(rag_loaded)
         Base.run(__model__, raw"this.$refs.uploader.reset()")
     end
     ### Navigation
@@ -108,18 +131,39 @@ Stipple.Layout.add_script("https://cdn.tailwindcss.com")
             end
         end
     end
-    @onbutton files_prev begin
-        @info "> Previous file"
-        Base.run(__model__, raw"this.scrollToElementPrevious()")
+    @onbutton nav_prev begin
+        @info "> Nav to previous item"
+        if selected_page == "conversations"
+            isempty(files_loaded) && return
+            Base.run(__model__, raw"this.scrollToElementPrevious()")
+        elseif selected_page == "rag"
+            isempty(rag_loaded) && return
+            rag_show_idx = max(rag_show_idx - 1, firstindex(rag_loaded))
+            rag_show = rag_loaded[rag_show_idx]
+        end
     end
-    @onbutton files_next begin
-        @info "> Next file"
-        Base.run(__model__, raw"this.scrollToElementNext()")
+    @onbutton nav_next begin
+        @info "> Nav to next item"
+        if selected_page == "conversations"
+            isempty(files_loaded) && return
+            Base.run(__model__, raw"this.scrollToElementNext()")
+        elseif selected_page == "rag"
+            isempty(rag_loaded) && return
+            rag_show_idx = min(rag_show_idx + 1, lastindex(rag_loaded))
+            rag_show = rag_loaded[rag_show_idx]
+        end
     end
-    @onbutton files_random begin
-        @info "> Random file"
-        idx = rand(0:(length(files_show) - 1))
-        Base.run(__model__, "this.scrollToElement('convo_$(idx)')")
+    @onbutton nav_random begin
+        @info "> Nav to random item"
+        if selected_page == "conversations"
+            isempty(files_loaded) && return
+            idx = rand(0:(length(files_show) - 1))
+            Base.run(__model__, "this.scrollToElement('convo_$(idx)')")
+        elseif selected_page == "rag"
+            isempty(rag_loaded) && return
+            rag_show_idx = rand(1:(length(rag_loaded)))
+            rag_show = rag_loaded[rag_show_idx]
+        end
     end
 end
 # Required for the uploader component
@@ -198,64 +242,7 @@ end
         if (currentIndex >= 0 && currentIndex < convoElements.length - 1) {
           this.scrollToElement(convoElements[currentIndex + 1].id);
         }
-      },
-    filterFn (val, update) {
-        if (val === '') {
-            update(() => {
-            // reset to full option list
-            this.chat_template_options = this.chat_template_options_all
-            })
-            return
-        }
-
-        update(() => {
-            // filter down based on user provided input
-            const needle = val.toLowerCase()
-            this.chat_template_options = this.chat_template_options_all.filter(v => v.toLowerCase().indexOf(needle) > -1)
-        })
-        },
-    filterFnAuto (val, update) {
-        if (val === '') {
-            update(() => {
-            // reset to full option list
-            this.chat_auto_template_options = this.chat_auto_template_options_all
-            })
-            return
-        }
-
-        update(() => {
-            // filter down based on user provided input
-            const needle = val.toLowerCase()
-            this.chat_auto_template_options = this.chat_auto_template_options_all.filter(v => v.toLowerCase().indexOf(needle) > -1)
-        })
-        },
-    copyToClipboard: function(index) {
-        console.log(index);
-        const str = this.conv_displayed[index].content; // extract the content of the element in position `index`
-        const el = document.createElement('textarea');  // Create a <textarea> element
-        el.value = str;                                 // Set its value to the string that you want copied
-        el.setAttribute('readonly', '');                // Make it readonly to be tamper-proof
-        el.style.position = 'absolute';                 
-        el.style.left = '-9999px';                      // Move outside the screen to make it invisible
-        document.body.appendChild(el);                  // Append the <textarea> element to the HTML document
-        el.select();                                    // Select the <textarea> content
-        document.execCommand('copy');                   // Copy - only works as a result of a user action (e.g. click events)
-        document.body.removeChild(el);                  // Remove the <textarea> element
-    },
-    handleFileInput(file) {
-      // Access the uploaded file data
-      console.log(file); // File object
-      const fileData = file.target.files[0];
-      console.log(fileData.name); // File name
-      console.log(fileData.size); // File size
-      console.log(fileData.type); // File type
-    },
-    handleFolderSelect(event) {
-        console.log(this.singlef_path);
-        console.log(event);
-      const folderPath = event.target.files[0].path;
-      console.log(folderPath); // Selected folder path
-    }
+      }
     """
 end
 

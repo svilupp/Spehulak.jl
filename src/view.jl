@@ -1,7 +1,7 @@
 ## Individual Tabs
 function tab_files()
     [
-        h3("Files Browser"),
+        h3("Conversation Browser"),
         tab_files_upload(),
         separator(),
         tab_files_convos()
@@ -10,7 +10,7 @@ end
 
 function tab_rag()
     [h3("RAG Viewer"),
-        span("Under construction...")
+        tab_rag_viewer()
     ] |> htmldiv
 end
 
@@ -42,10 +42,10 @@ function ui()
                     space(),
                     htmldiv(class = "ml-6 flex items-center justify-end",
                         btngroup(class = "py-auto items-center",
-                            [btn(@click(:files_prev), icon = "arrow_back", size = "md"),
-                                btn(@click(:files_next),
+                            [btn(@click(:nav_prev), icon = "arrow_back", size = "md"),
+                                btn(@click(:nav_next),
                                     icon = "arrow_forward", size = "md"),
-                                btn(@click(:files_random), icon = "casino", size = "md")])
+                                btn(@click(:nav_random), icon = "casino", size = "md")])
                     )
                 ])]),
             drawer(bordered = "", fieldname = "left_drawer_open", side = "left",
@@ -56,32 +56,35 @@ function ui()
                 list(bordered = true, separator = true,
                     [
                         item(clickable = "", vripple = "",
-                            @click("selected_page = 'files'"),
+                            @click("selected_page = 'conversations'"),
                             [
                                 itemsection(avatar = true, icon("folder_open")),
-                                itemsection("Files Browser")
+                                itemsection("Conversations")
                             ]),
                         item(clickable = "", vripple = "",
                             @click("selected_page = 'rag'"),
                             [
                                 itemsection(avatar = true, icon("school")),
                                 itemsection("RAG")
-                            ]),
-                        item(clickable = "", vripple = "",
-                            @click("selected_page = 'ratings'"),
-                            [
-                                itemsection(avatar = true, icon("reviews")),
-                                itemsection("Ratings")
                             ])
+                        # item(clickable = "", vripple = "",
+                        #     @click("selected_page = 'ratings'"),
+                        #     [
+                        #         itemsection(avatar = true, icon("reviews")),
+                        #         itemsection("Ratings")
+                        #     ])
                     ]
                 )),
             page_container(class = "mx-8",
                 [
-                    Html.div(class = "", @iif("selected_page == 'files'"),
+                    htmldiv(id="top"),
+                    Html.div(class = "", @iif("selected_page == 'conversations'"),
                         tab_files()),
                     Html.div(class = "", @iif("selected_page == 'rag'"),
                         tab_rag()),
-                    Html.div(class = "", @iif("selected_page == 'ratings'"), tab_ratings())]),
+                    # Html.div(class = "", @iif("selected_page == 'ratings'"), tab_ratings())
+                    a(class="pt-10", href="#top", "Back to top")
+                    ]),
             quasar(
                 :footer, reveal = true, bordered = false,
                 class = "bg-white text-primary text-caption text-center",

@@ -1,7 +1,7 @@
 name = "Spehulak"
 uuid = "13b2040c-5979-4bcf-93a6-c2323bf411ba"
 authors = ["J S <49557684+svilupp@users.noreply.github.com> and contributors"]
-version = "0.1.0-DEV"
+version = "0.1.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -10,13 +10,19 @@ Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 GenieFramework = "a59fdf5c-6bf0-4f5d-949c-a137c9e2f353"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 PromptingTools = "670122d1-24a8-4d70-bfce-740807c42192"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StippleDownloads = "291a174b-6542-42e7-9996-fc00d7c03310"
 
 [compat]
 Aqua = "0.7"
+CSV = "0.10"
+DataFrames = "1.4,1.5,1.6"
+Dates = "<0.0.1, 1"
 GenieFramework = "2.1"
 JSON3 = "1"
-PromptingTools = "=0.26.1"
+PromptingTools = "0.33"
+Statistics = "<0.0.1, 1"
+StippleDownloads = "0.1"
 Test = "<0.0.1, 1"
 julia = "1.10"
 

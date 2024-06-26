@@ -1,10 +1,13 @@
 module Spehulak
 
 using DataFrames, CSV, Dates
+using Statistics: mean, std
 using PromptingTools
 const PT = PromptingTools
 using PromptingTools.Experimental.AgentTools
 const AT = PromptingTools.Experimental.AgentTools
+using PromptingTools.Experimental.RAGTools
+const RT = PromptingTools.Experimental.RAGTools
 using JSON3
 
 using GenieFramework
@@ -15,19 +18,23 @@ using StippleDownloads
 
 export Genie, Server, up, down
 
-export load_conversations_from_dir
+export load_objects_from_dir, load_object
 include("utils.jl")
 
-export messagecard, templatecard
+export messagecard
 include("components.jl")
 
 include("view_files.jl")
+include("view_rag.jl")
 
-export ui, ui_login
+export ui
 include("view.jl")
 
-export SnowConversation, SnowMessage, msg2snow
+export SnowRAG, SnowConversation, SnowMessage, msg2snow
 include("conversation.jl")
+
+export launch
+include("server.jl")
 
 function __init__()
 end

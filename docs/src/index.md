@@ -4,37 +4,34 @@ layout: home
 
 hero:
   name: Spehulak.jl
-  tagline: ...
-  description: ...
+  tagline: Spy on your LLM conversations
+  description: A generative AI observability platform to help you understand what's happening inside your GenAI application.
   image:
-    src: https://img.icons8.com/dusk/128/portal.png
-    alt: Portal Icon
+    src: https://img.icons8.com/?size=100&id=66415&format=png&color=000000
+    alt: Snowman Icon
   actions:
     - theme: brand
-      text: Get Started
-      link: /getting_started
+      text: Introduction
+      link: /introduction
     - theme: alt
-      text: How It Works
-      link: /how_it_works
-    - theme: alt
-      text: F.A.Q.
-      link: /frequently_asked_questions
+      text: API Reference
+      link: /reference
     - theme: alt
       text: View on GitHub
-      link: https://github.com/svilupp/ProToPortal.jl
+      link: https://github.com/svilupp/Spehulak.jl
 
 features:
-  - icon: <img width="64" height="64" src="https://img.icons8.com/dusk/64/cloud.png" alt="Accessible Anywhere"/>
-    title: Accessible Anywhere
-    details: 'ProToPortal is fully responsive, making it accessible on any device—laptop, phone, and more. Save keystrokes and time with a wide range of prompt templates suitable for any situation.'
+  - icon: <img width="64" height="64" src="https://img.icons8.com/?size=100&id=46986&format=png&color=000000" alt="Integration"/>
+    title: Integration with PromptingTools
+    details: 'Load serialized LLM conversations and RAG results saved via PromptingTools.jl and inspect them with Spehulak.jl.'
 
-  - icon: <img width="64" height="64" src="https://img.icons8.com/dusk/64/code.png" alt="Code Evaluation and Fixing"/>
-    title: Code Evaluation and Fixing
-    details: 'Unique among GUIs, ProToPortal allows direct evaluation and fixing of Julia code. Streamline your workflow by avoiding the need for manual code corrections and copy-pasting.'
+  - icon: <img width="64" height="64" src="https://img.icons8.com/?size=100&id=46695&format=png&color=000000" alt="Navigation"/>
+    title: Seamless Navigation
+    details: 'Browse through conversations, sample them randomly, filter by keywords, and navigate with ease.'
 
-  - icon: <img width="64" height="64" src="https://img.icons8.com/dusk/64/fax.png" alt="Automatic Replies"/>
-    title: Automatic Replies
-    details: 'Enhance your efficiency with automated responses. ProToPortal offers fixed messages and critic templates, acting as a separate agent to handle repetitive interactions effortlessly.'
+  - icon: <img width="64" height="64" src="https://img.icons8.com/?size=100&id=AGmcFT8jaCcR&format=png&color=000000" alt="Automatic Replies"/>
+    title: Metadata Inspection
+    details: 'Inspect granular metadata like prompt template versions, LLM temperature, and models used to gain insights about your GenAI pipelines.'
 
 ---
 ```
@@ -45,30 +42,25 @@ features:
 <div class="vp-doc" style="width:80%; margin:auto">
 
 <h1> Why Spehulak.jl? </h1>
+Understanding what's happening inside your GenAI model can be a challenge. Spehulak.jl is here to help.
 
-Coding and prompt management should be efficient, not a chore. 
-
-ProToPortal.jl was born from a need to make my own coding efforts and general LLM interactions more productive and hassle-free. It's designed to help you manage and automate your workflows more effectively, whether you're on the go or at your desk. 
-
-It's the first Julia-focused GUI (evaluate Julia code, fix it, critique it - or automate it).
+Spehulak.jl is a generative AI observability platform that provides a set of tools for inspecting and evaluating traces saved via PromptingTools.jl. It's designed to help you make sense of your LLM conversations and RAG results.
 
 <h2> Quick Start Guide </h2>
 
-Clone ProToPortal, instantiate it, enable your desired settings, and streamline your LLM interactions right away:
+Install it and get started with Spehulak.jl in just two lines of code:
 
 ```julia
-using Pkg; Pkg.activate("."); Pkg.instantiate(".")
-include("main.jl")
+using Spehulak
+launch() # starts an asynchronous server on 9001
 ```
 
-Then head to your browser and go to [http://127.0.0.1:8000](http://127.0.0.1:8000) to see the app.
+Then head to your browser and go to <http://localhost:9001> to start exploring your conversations.
 
-For more information, see the [Getting Started](/introduction#Getting-Started) section. Explore all available features in the [Features by Tab](/introduction#Features-by-Tab) section.
+For more information, see the [Introduction](@ref) section.
 
 <br>
-Ready to transform your coding productivity? Explore ProToPortal.jl now and start working smarter.
+Ready to gain insights into your GenAI model? Explore Spehulak.jl now!
 <br><br>
-It's easy to deploy to Fly.io, so you can use it on the go. Open an issue if you would like me to publish a tutorial.
-
 </div>
 ````
