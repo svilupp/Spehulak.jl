@@ -3,17 +3,25 @@ CurrentModule = Spehulak
 ```
 # Spehulak
 
-Welcome to the documentation for [Spehulak](https://github.com/svilupp/Spehulak.jl).
+Welcome to the documentation for [Spehulak.jl](https://github.com/svilupp/Spehulak.jl).
 
-![Spy+snowman = Spehulak](docs/assets/spehulak.png)
+![Spy+snowman = Spehulak](assets/spehulak.png)
 
 Spehulak.jl is a package for GenAI observability - helping you understand what's happening inside your GenAI model. It provides a set of tools for inspecting and evaluating the traces saved via PromptingTools.jl.
 
 ## Quick Start
 
+Package is not yet registered, add it to your environment with:
+
+```julia
+using Pkg
+Pkg.activate(".")
+Pkg.add(url="https://github.com/svilupp/Spehulak.jl")
+```
+
 ```julia
 using Spehulak
-launch() # defaults to asynchronous server on 9001
+launch() # starts an asynchronous server on 9001
 ```
 
 Open the browser and navigate to `http://localhost:9001`.

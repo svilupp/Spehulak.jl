@@ -6,7 +6,7 @@
 [![Aqua](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 
-![Spy+snowman = Spehulak](docs/assets/spehulak.png)
+![Spy+snowman = Spehulak](docs/src/assets/spehulak.png)
 
 > [!WARNING]
 > This package is experimental and early in its development. Be careful if using it in production.
@@ -15,9 +15,19 @@ Spehulak.jl is a package for GenAI observability - helping you understand what's
 
 ## Quick Start
 
+Package is not yet registered, add it to your environment with:
+
+```julia
+using Pkg
+Pkg.activate(".")
+Pkg.add(url="https://github.com/svilupp/Spehulak.jl")
+```
+
+Then, start the app with
+
 ```julia
 using Spehulak
-launch() # defaults to asynchronous server on 9001
+launch() # starts an asynchronous server on 9001
 ```
 
 Open the browser and navigate to `http://localhost:9001`.

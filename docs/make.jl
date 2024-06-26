@@ -1,5 +1,6 @@
 using Spehulak
 using Documenter
+using DocumenterVitepress
 
 DocMeta.setdocmeta!(Spehulak, :DocTestSetup, :(using Spehulak); recursive = true)
 
