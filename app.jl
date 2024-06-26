@@ -242,50 +242,7 @@ end
         if (currentIndex >= 0 && currentIndex < convoElements.length - 1) {
           this.scrollToElement(convoElements[currentIndex + 1].id);
         }
-      },
-    filterFn (val, update) {
-        if (val === '') {
-            update(() => {
-            // reset to full option list
-            this.chat_template_options = this.chat_template_options_all
-            })
-            return
-        }
-
-        update(() => {
-            // filter down based on user provided input
-            const needle = val.toLowerCase()
-            this.chat_template_options = this.chat_template_options_all.filter(v => v.toLowerCase().indexOf(needle) > -1)
-        })
-        },
-    filterFnAuto (val, update) {
-        if (val === '') {
-            update(() => {
-            // reset to full option list
-            this.chat_auto_template_options = this.chat_auto_template_options_all
-            })
-            return
-        }
-
-        update(() => {
-            // filter down based on user provided input
-            const needle = val.toLowerCase()
-            this.chat_auto_template_options = this.chat_auto_template_options_all.filter(v => v.toLowerCase().indexOf(needle) > -1)
-        })
-        },
-    copyToClipboard: function(index) {
-        console.log(index);
-        const str = this.conv_displayed[index].content; // extract the content of the element in position `index`
-        const el = document.createElement('textarea');  // Create a <textarea> element
-        el.value = str;                                 // Set its value to the string that you want copied
-        el.setAttribute('readonly', '');                // Make it readonly to be tamper-proof
-        el.style.position = 'absolute';                 
-        el.style.left = '-9999px';                      // Move outside the screen to make it invisible
-        document.body.appendChild(el);                  // Append the <textarea> element to the HTML document
-        el.select();                                    // Select the <textarea> content
-        document.execCommand('copy');                   // Copy - only works as a result of a user action (e.g. click events)
-        document.body.removeChild(el);                  // Remove the <textarea> element
-    }
+      }
     """
 end
 

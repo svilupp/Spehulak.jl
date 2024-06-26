@@ -83,7 +83,7 @@ function ui()
                     Html.div(class = "", @iif("selected_page == 'rag'"),
                         tab_rag()),
                     # Html.div(class = "", @iif("selected_page == 'ratings'"), tab_ratings())
-                    a(href="#top", "Back to top")
+                    a(class="pt-10", href="#top", "Back to top")
                     ]),
             quasar(
                 :footer, reveal = true, bordered = false,
