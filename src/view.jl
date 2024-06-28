@@ -56,12 +56,16 @@ function ui()
                 list(bordered = true, separator = true,
                     [
                         item(clickable = "", vripple = "",
+                            active! = "selected_page == 'conversations'",
+                            active__class = "bg-grey-4",
                             @click("selected_page = 'conversations'"),
                             [
                                 itemsection(avatar = true, icon("folder_open")),
                                 itemsection("Conversations")
                             ]),
                         item(clickable = "", vripple = "",
+                            active! = "selected_page == 'rag'",
+                            active__class = "bg-grey-4",
                             @click("selected_page = 'rag'"),
                             [
                                 itemsection(avatar = true, icon("school")),
