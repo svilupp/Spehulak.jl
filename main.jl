@@ -1,5 +1,6 @@
 # Utility script for customized launches via ENV
 # see documentation for Genie.config to learn about more options!
+cd(@__DIR__)
 using Pkg
 Pkg.activate(".")
 using GenieFramework
