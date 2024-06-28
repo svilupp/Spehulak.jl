@@ -16,7 +16,6 @@ This is a convenience wrapper around `Genie.up`, to customize the server configu
 function launch(
         port::Int = 9001, host::String = "127.0.0.1";
         async::Bool = true)
-    # include(joinpath(@__DIR__, ",,", "app.jl")) # hack for hot-reloading when fixing things
-    Genie.loadapp()
+    Genie.loadapp(pkgdir(Spehulak))
     up(port, host; async)
 end
