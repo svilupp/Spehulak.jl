@@ -11,12 +11,12 @@ Spehulak.jl is a package for GenAI observability - helping you understand what's
 
 ## Quick Start
 
-Package is not yet registered, add it to your environment with:
+Add it to your environment simply with:
 
 ```julia
 using Pkg
 Pkg.activate(".")
-Pkg.add(url="https://github.com/svilupp/Spehulak.jl")
+Pkg.add("Spehulak")
 ```
 
 ```julia
