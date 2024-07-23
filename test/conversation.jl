@@ -44,7 +44,8 @@ using Spehulak: msg2snow, SnowMessage, SnowConversation, SnowRAG
     )
     snow_res = msg2snow(res; path = "d/e/f")
     @test snow_res.title == "d/e/f"
-    @test snow_res.context == ["Context ID 1\n-----\nContext:\n-----\nworld\n\n"]
+    @test snow_res.context ==
+          ["Context ID 1\nSource: my\n-----\nContext:\n-----\nworld\n\n"]
     @test snow_res.sources == ["my"]
     @test snow_res.class == ""
     @test snow_res.conv_main isa SnowConversation

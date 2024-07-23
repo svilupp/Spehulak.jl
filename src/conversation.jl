@@ -179,7 +179,7 @@ function msg2snow(rag::RT.RAGResult; path::AbstractString = "")
     end
     context = String[]
     for i in eachindex(rag.context)
-        source_str = if i > length(rag.sources)
+        source_str = if i <= length(rag.sources)
             "Source: $(rag.sources[i])\n"
         else
             ""
