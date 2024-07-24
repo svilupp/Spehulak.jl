@@ -16,6 +16,9 @@ This is a convenience wrapper around `Genie.up`, to customize the server configu
 function launch(
         port::Int = 9001, host::String = "127.0.0.1";
         async::Bool = true)
-    Genie.loadapp(pkgdir(Spehulak))
-    up(port, host; async)
+    # disabled - wasn't working robustly
+    # Genie.loadapp(pkgdir(Spehulak))
+    ## Load the module explicitly
+    include(joinpath(pkgdir(Spehulak), "app.jl"))
+    App.up(port, host; async)
 end
