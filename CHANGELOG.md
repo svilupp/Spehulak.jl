@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.3.0]
+
+### Updated
+- Increased compat bound for PromptingTools to 0.43
+
+### Fixed
+- Changed Stipple App loading strategy to prevent issues with temporary environments
+
 ## [0.2.1]
 
 ### Updated
